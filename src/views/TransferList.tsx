@@ -1,10 +1,12 @@
-import { ActionPanel, showToast, Toast, Detail, List, Action } from "@raycast/api";
+import { ActionPanel, showToast, Toast, Detail, List, Action, Icon } from "@raycast/api";
 import { useEffect, useState } from "react";
-import PutioAPI from '@putdotio/api-client'
+import TransferDetails from "../components/TransferDetails";
+import PutioAPI, { Transfer } from '@putdotio/api-client'
 
 function TransferList() {
   // State vars and handlers
-  const [transfers, setTransfers] = useState(null);
+  const [transfers, setTransfers] = useState<Transfer[]>();
+  const [isShowingDetail, setIsShowingDetail] = useState(false);  
   const [error, setError] = useState<Error>();
 
   useEffect(() => {
@@ -32,7 +34,8 @@ function TransferList() {
   // Query for a list of transfers
   putioAPI.Transfers.Query(100, 100)
     .then(t => {
-      setTransfers(t.data)
+      // Filter the transfer list to only include completed items.
+      setTransfers(t.data.transfers.filter((transfer) => transfer.status == "COMPLETED"));
       console.log('Fetched transfers: ', t.data); 
     })
     .catch(e => { 
@@ -41,17 +44,37 @@ function TransferList() {
     })
 
   return (
-    <List isLoading={transfers === undefined}>
+    <List isLoading={transfers === undefined}
+          isShowingDetail={isShowingDetail}
+    >
       { transfers && 
-        Object.values(transfers.transfers).map(transfer => {
+        Object.values(transfers).map(transfer => {
 
         return (
           <List.Item
           icon="list-icon.png"
           title={`${transfer.name}`}
+          detail={
+            (
+              <TransferDetails transferDetails={transfer}
+              />
+            )
+          }
           actions={
-            <ActionPanel>
-              <Action.Push title="Show Details" target={<Detail markdown="# Hey! 👋" />} />
+            <ActionPanel title="Transfer Actions">
+              <Action
+                icon={Icon.Sidebar}
+                title={isShowingDetail ? "Hide Transfer Details" : "Show Transfer Details"}
+                onAction={() => setIsShowingDetail((previous) => !previous)}
+              />
+              <Action
+                title={"Download TV Show"}
+                icon={Icon.TV}
+              />
+              <Action
+                title="Download Movie"
+                icon={Icon.Movie}
+              />
             </ActionPanel>
           }
           />  
