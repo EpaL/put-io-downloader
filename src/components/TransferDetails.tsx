@@ -19,8 +19,20 @@ function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
             <List.Item.Detail.Metadata.Label title="Size" text={formatSize(transferDetails.size, true, 2)} icon={null} />
             <List.Item.Detail.Metadata.Separator />
           </Fragment>
+          <Fragment key="status">
+            <List.Item.Detail.Metadata.Label title="Status" text={`${transferDetails.status}`} icon={null} />
+            <List.Item.Detail.Metadata.Separator />
+          </Fragment>
+          <Fragment key="tracker">
+            <List.Item.Detail.Metadata.Label title="Tracker" text={`${transferDetails.tracker}`} icon={null} />
+            <List.Item.Detail.Metadata.Separator />
+          </Fragment>
+          <Fragment key="tracker_message">
+            <List.Item.Detail.Metadata.Label title="Tracker Message" text={transferDetails.tracker_message ? transferDetails.tracker_message : "(empty)"} icon={null} />
+            <List.Item.Detail.Metadata.Separator />
+          </Fragment>
           <Fragment key="ratio">
-            <List.Item.Detail.Metadata.Label title="Ratio" text={`${transferDetails.current_ratio}:1`} icon={null} />
+            <List.Item.Detail.Metadata.Label title="Ratio" text={`${transferDetails.current_ratio}`} icon={null} />
             <List.Item.Detail.Metadata.Separator />
           </Fragment>
           <Fragment key="peers">
