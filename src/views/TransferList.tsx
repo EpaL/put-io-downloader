@@ -83,7 +83,7 @@ function TransferList() {
               <Action
                 icon={Icon.Document}
                 title="Show Files"
-                onAction={() => push(<FileList transferDetails={transfer} />)}
+                onAction={() => push(<FileList parent_file_id={transfer.file_id} />)}
               />
               <Action
                 icon={Icon.Sidebar}
