@@ -1,5 +1,5 @@
-import FileList from "./views/FileList";
+import FileBrowser from "./views/FileBrowser";
 
 export default function Command() {
-  return <FileList transferDetails={null} />;
+  return <FileBrowser parent_file_id="-1" />;
 }

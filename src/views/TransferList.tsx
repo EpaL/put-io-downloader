@@ -1,7 +1,7 @@
 import { ActionPanel, showToast, Toast, Detail, List, Action, Icon, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
 import TransferDetails from "../components/TransferDetails";
-import FileList from "./FileList";
+import FileBrowser from "./FileBrowser";
 import PutioAPI, { Transfer } from '@putdotio/api-client'
 import { count } from "console";
 import { preferences } from "../preferences";
@@ -27,14 +27,6 @@ function TransferList() {
   useEffect(() => {
     const putioAPI = new PutioAPI({ clientID: preferences.putioClientId })
     putioAPI.setToken(preferences.putioOAuthToken)
-
-    // // Query account info
-    // putioAPI.Account.Info()
-    //   .then(r => console.log('Fetched user info: ', r))
-    //   .catch(e => {
-    //     console.log('An error occurred while fetching user info: ', e)
-    //     setError(new Error("Error fetching user details from put.io. Check your Client ID and API Token."))
-    //   })
 
     // Query for a list of transfers
     putioAPI.Transfers.Query()
@@ -82,8 +74,8 @@ function TransferList() {
             <ActionPanel title="Transfer Actions">
               <Action
                 icon={Icon.Document}
-                title="Show Files"
-                onAction={() => push(<FileList parent_file_id={transfer.file_id} />)}
+                title="Browse File(s)"
+                onAction={() => push(<FileBrowser parent_file_id={transfer.file_id} />)}
               />
               <Action
                 icon={Icon.Sidebar}

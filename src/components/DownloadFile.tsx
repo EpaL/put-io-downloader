@@ -2,6 +2,7 @@ import { Color, showToast, Toast, Detail, Form, List } from "@raycast/api";
 import { useEffect, useState } from "react";
 import PutioAPI, { IFile, Transfer } from '@putdotio/api-client'
 import { preferences } from "../preferences";
+import { start } from "repl";
 
 function DownloadFile({file, type}: {file: IFile; type: string;}) {
   const [error, setError] = useState<Error>();
@@ -76,9 +77,17 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
 
 function formatDownloadInfo(file: IFile, fileUrl: string): string
 {
+  var startingDownload: string = "";
+
+  if (fileUrl) {
+    startingDownload = "Starting download [${fileUrl}](${fileUrl})";
+  }
   return `
     # ${file.name}
-    Starting download: [${fileUrl}](${fileUrl})
+    Size: ${file.size}
+    Type: ${file.file_type}
+    Content Type: ${file.content_type} 
+    ${startingDownload}
   `;
 }
 
