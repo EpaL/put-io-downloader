@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import DownloadFile from "../components/DownloadFile";
 import FileDetails from "../components/FileDetails";
 import formatString from "../utils/formatString";
+import formatDate from "../utils/formatDate";
+import formatSize from "../utils/formatSize";
 import PutioAPI, { Transfer  } from '@putdotio/api-client'
 import { preferences } from "../preferences";
 
@@ -36,8 +38,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
     putioAPI.setToken(preferences.putioOAuthToken)
 
     // Query for a list of files and then reverse-sort by creation date/time
-    var file_id = parent_file_id ? parent_file_id : -1
-    putioAPI.Files.Query(file_id)
+    putioAPI.Files.Query(parent_file_id)
       .then(t => {
         if (t.data.files.length == 0) {
           // If the files array is empty, it means this is just a file, not a directory.
@@ -56,16 +57,17 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
         } else {
           // The files array isn't empty, which means this is a folder.
           // Set the files object to the 'files' array, which contains the list of files in the folder.
-          setFiles(t.data.files.sort((n1,n2) => {
-            if (n1.created_at < n2.created_at) {
-                return 1;
-            }
+          setFiles(t.data.files)
+          // setFiles(t.data.files.sort((n1,n2) => {
+          //   if (n1.created_at < n2.created_at) {
+          //       return 1;
+          //   }
         
-            if (n1.created_at > n2.created_at) {
-                return -1;
-            }
-            return 0;
-          }))
+          //   if (n1.created_at > n2.created_at) {
+          //       return -1;
+          //   }
+          //   return 0;
+          // }))
         }
       })
       .catch(e => { 
@@ -89,6 +91,11 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
       exec(cmd, (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
+          showToast({
+            style: Toast.Style.Failure,
+            title: "Error",
+            message: "Starting download failed.",
+          })    
           return;
         }
         if (stderr) {
@@ -96,7 +103,15 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
           return;
         }
         console.log(`stdout: ${stdout}`);
-        showHUD("⬇️ Download started.");
+
+        showToast({
+          style: Toast.Style.Success,
+          title: "Success",
+          message: "⬇️ Download started.",
+        })  
+
+        // Null out the download type so we can start another download again if we want to.
+        setDownloadType(undefined);
     });
     }
   }, [downloadType]);  
@@ -119,6 +134,9 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
       >
         { files && 
           Object.values(files).map(file => {
+          const accessories = [];
+          accessories.push({ text: formatSize(file.size, true, 1) });
+          accessories.push({ text: formatDate(new Date(file.created_at)) });
           return (
             <List.Item
             key={`${file.id}`}
@@ -133,6 +151,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
                 />                  
               </ActionPanel>
             }
+            accessories={accessories}
             />  
           )
           }
@@ -162,6 +181,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
               <Action
                 title={"Download TV Show"}
                 icon={Icon.Download}
+                shortcut={{ modifiers: ["cmd"], key: "t" }}                
                 onAction={() => {
                   setDownloadType("TVSHOW");
                 }}
@@ -169,6 +189,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
               <Action
                 title="Download Movie"
                 icon={Icon.Download}
+                shortcut={{ modifiers: ["cmd"], key: "m" }}                
                 onAction={() => {
                   setDownloadType("MOVIE");
                 }}             

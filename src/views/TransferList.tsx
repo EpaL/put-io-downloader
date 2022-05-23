@@ -1,9 +1,11 @@
-import { ActionPanel, showToast, Toast, Detail, List, Action, Icon, useNavigation } from "@raycast/api";
+import { ActionPanel, showToast, Toast, Detail, List, Color, Action, Icon, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
 import TransferDetails from "../components/TransferDetails";
 import FileBrowser from "./FileBrowser";
 import PutioAPI, { Transfer } from '@putdotio/api-client'
-import { count } from "console";
+import formatString from "../utils/formatString";
+import formatDate from "../utils/formatDate";
+import formatSize from "../utils/formatSize";
 import { preferences } from "../preferences";
 
 function TransferList() {
@@ -44,7 +46,6 @@ function TransferList() {
           }
           return 0;
         }));
-        console.log('Number of fetched transfers: ', transfers?.length); 
       })
       .catch(e => { 
         console.log('An error occurred while fetching transfers: ', e)
@@ -59,10 +60,38 @@ function TransferList() {
     >
       { transfers && 
         Object.values(transfers).map(transfer => {
+        var icon = null;
+        switch(transfer.status) {
+          case "PREPARING_DOWNLOAD":
+          case "DOWNLOADING":
+            icon = { source: Icon.Download, tintColor: Color.Blue };
+            break;
+          case "STOPPING":
+            icon = { source: Icon.XmarkCircle };
+            break;
+          case "WAITING":
+          case "IN_QUEUE":
+          case "WAITING_FOR_COMPLETE_QUEUE":
+          case "COMPLETING":
+              icon = { source: Icon.Clock };
+            break;
+          case "ERROR":
+            icon = { source: Icon.ExclamationMark, tintColor: Color.Red };
+            break;
+          case "SEEDING":
+          case "COMPLETED":
+            icon = { source: Icon.Checkmark, tintColor: Color.Green };
+            break;
+        }
+        const accessories = [];
+        if (isShowingDetail == false) {
+          accessories.push({ text: formatSize(transfer.size, true, 1) });
+          accessories.push({ text: formatDate(new Date(transfer.created_at)) });  
+        }
         return (
           <List.Item
           key={`${transfer.id}`}
-          icon={Icon.Download}
+          icon={icon}
           title={`${transfer.name}`}
           detail={
             (
@@ -72,26 +101,23 @@ function TransferList() {
           }
           actions={
             <ActionPanel title="Transfer Actions">
-              <Action
-                icon={Icon.Document}
-                title="Browse File(s)"
-                onAction={() => push(<FileBrowser parent_file_id={transfer.file_id} />)}
-              />
+              {
+                transfer.file_id && (
+                  <Action
+                  icon={Icon.Document}
+                  title="Browse"
+                  onAction={() => push(<FileBrowser parent_file_id={transfer.file_id} />)}
+                  />
+                )
+              }
               <Action
                 icon={Icon.Sidebar}
                 title={isShowingDetail ? "Hide Transfer Details" : "Show Transfer Details"}
                 onAction={() => setIsShowingDetail((previous) => !previous)}
               />
-              <Action
-                title={"Download TV Show"}
-                icon={Icon.Download}
-              />
-              <Action
-                title="Download Movie"
-                icon={Icon.Download}
-              />
             </ActionPanel>
           }
+          accessories={accessories}
           />  
         )
         }
