@@ -3,7 +3,7 @@
   "name": "put-io-downloader",
   "title": "Put.io Downloader",
   "description": "Shows a list of transfers from Put.io, with optons trigger a download",
-  "icon": "command-icon.png",
+  "icon": "putio-icon.png",
   "author": "EpaL",
   "categories": [
     "Media",
