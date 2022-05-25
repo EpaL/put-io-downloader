@@ -20,14 +20,14 @@ function TransferList() {
       showToast({
         style: Toast.Style.Failure,
         title: "Something went wrong",
-        message: error,
+        message: error.message,
       })  
     }
   }, [error]);
 
   // Init put.io API
   useEffect(() => {
-    const putioAPI = new PutioAPI({ clientID: preferences.putioClientId })
+    const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
     putioAPI.setToken(preferences.putioOAuthToken)
 
     // Query for a list of transfers
@@ -106,7 +106,7 @@ function TransferList() {
                   <Action
                   icon={Icon.Document}
                   title="Browse"
-                  onAction={() => push(<FileBrowser parent_file_id={transfer.file_id} />)}
+                  onAction={() => push(<FileBrowser parent_file_id={Number(transfer.file_id)} />)}
                   />
                 )
               }

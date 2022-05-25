@@ -24,7 +24,7 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
   // Retrieve the file URL
   useEffect(() => {
     // Init put.io API
-    const putioAPI = new PutioAPI({ clientID: preferences.putioClientId })
+    const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
     putioAPI.setToken(preferences.putioOAuthToken)
 
     // Get the URL for the file
@@ -42,11 +42,11 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
   // Execute the download
   useEffect(() => {
     // Once the file URL is retrieved, send the download command.
-    if (fileUrl !== undefined) {
+    if (fileUrl !== undefined && preferences.tvShowDownloadCommand !== null) {
       console.log("Downloading ", fileUrl);
-      var cmd = FormatString(preferences.tvShowDownloadCommand, fileUrl);
+      var cmd = FormatString(preferences.tvShowDownloadCommand!, fileUrl);
       console.log("Executing command: ", cmd);
-      exec(cmd, (error, stdout, stderr) => {
+      exec(cmd, (error: { message: any; }, stdout: any, stderr: any) => {
         if (error) {
           console.log(`error: ${error.message}`);
           return;
@@ -60,10 +60,10 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
     }
   }, [fileUrl]);
 
-  if (type == "TVSHOW") {
+  if (type == "TVSHOW" && fileUrl !== null) {
     return (
       <Detail
-        markdown={formatDownloadInfo(file, fileUrl)}>
+        markdown={formatDownloadInfo(file, fileUrl!)}>
       </Detail>
     );  
   } else {

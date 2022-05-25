@@ -5,7 +5,7 @@ import FileDetails from "../components/FileDetails";
 import formatString from "../utils/formatString";
 import formatDate from "../utils/formatDate";
 import formatSize from "../utils/formatSize";
-import PutioAPI, { Transfer  } from '@putdotio/api-client'
+import PutioAPI, { IFile, Transfer  } from '@putdotio/api-client'
 import { preferences } from "../preferences";
 
 function FileBrowser({parent_file_id}: {parent_file_id: number}) {
@@ -35,7 +35,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   // Populate the list of files (if a folder), or information about the file (if a single file).
   useEffect(() => {
     // Init put.io API
-    const putioAPI = new PutioAPI({ clientID: preferences.putioClientId })
+    const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
     putioAPI.setToken(preferences.putioOAuthToken)
 
     // Query for a list of files and then reverse-sort by creation date/time
@@ -59,16 +59,6 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
           // The files array isn't empty, which means this is a folder.
           // Set the files object to the 'files' array, which contains the list of files in the folder.
           setFiles(t.data.files)
-          // setFiles(t.data.files.sort((n1,n2) => {
-          //   if (n1.created_at < n2.created_at) {
-          //       return 1;
-          //   }
-        
-          //   if (n1.created_at > n2.created_at) {
-          //       return -1;
-          //   }
-          //   return 0;
-          // }))
         }
       })
       .catch(e => { 
@@ -82,7 +72,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   useEffect(() => {
     if (selectedFileId !== undefined) {
       // Init put.io API
-      const putioAPI = new PutioAPI({ clientID: preferences.putioClientId })
+      const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
       putioAPI.setToken(preferences.putioOAuthToken)
 
       // Query for a list of files and then reverse-sort by creation date/time
@@ -103,13 +93,13 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
     if (fileUrl !== undefined && downloadType !== undefined) {
       var cmd = null
       console.log("Downloading ", fileUrl);
-      if (downloadType == "TVSHOW") {
-        cmd = formatString(preferences.tvShowDownloadCommand, fileUrl);
-      } else if (downloadType == "MOVIE") {
-        cmd = formatString(preferences.movieDownloadCommand, fileUrl);
+      if (downloadType == "TVSHOW" && preferences.tvShowDownloadCommand !== null) {
+        cmd = formatString(preferences.tvShowDownloadCommand!, fileUrl);
+      } else if (downloadType == "MOVIE" && preferences.movieDownloadCommand !== null) {
+        cmd = formatString(preferences.movieDownloadCommand!, fileUrl);
       }
       console.log("Executing command: ", cmd);
-      exec(cmd, (error, stdout, stderr) => {
+      exec(cmd, (error: { message: any; }, stdout: any, stderr: any) => {
         if (error) {
           console.log(`error: ${error.message}`);
           showToast({
@@ -160,8 +150,8 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
               if (selectedFileId === undefined) {
                 return;
               }
-              setFileUrl(null); // Clear the file URL because we're about to query the new one.
-              setSelectedFileId(selectedFileId);
+              setFileUrl(undefined); // Clear the file URL because we're about to query the new one.
+              setSelectedFileId(Number(selectedFileId));
             }}            
       >
         { files.length == 0 ? (
@@ -262,6 +252,15 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
           >
         </Detail>
       );
+    } else {
+      return (
+        <List>
+          <List.EmptyView
+            icon={{ source: "putio-icon.png" }}
+            title="There doesn't seem to be anything here."
+          />
+        </List>
+      )
     }
   }
 }

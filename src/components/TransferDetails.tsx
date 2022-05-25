@@ -12,7 +12,7 @@ function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
           <List.Item.Detail.Metadata.Label title="Transfer Details" />
           <List.Item.Detail.Metadata.Separator />
           <Fragment key="finishedAt">
-            <List.Item.Detail.Metadata.Label title="Finished" text={formatDate(new Date(transferDetails.finished_at))} icon={Icon.Calendar} />
+            <List.Item.Detail.Metadata.Label title="Finished" text={formatDate(new Date(transferDetails.finished_at!))} icon={Icon.Calendar} />
             <List.Item.Detail.Metadata.Separator />
           </Fragment>
           <Fragment key="size">

@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "put-io-downloader",
   "title": "Put.io Downloader",
-  "description": "Shows a list of transfers from Put.io, with optons trigger a download",
+  "description": "Browse and download files from Put.io.",
   "icon": "putio-icon.png",
   "author": "EpaL",
   "categories": [
@@ -13,16 +13,16 @@
   "commands": [
     {
       "name": "transfers",
-      "title": "Put.io Transfers",
-      "subtitle": "List of transfers in your put.io account",
-      "description": "Displays a list of transfers on Put.io.",
+      "title": "Browse Transfers",
+      "subtitle": "Put.io",
+      "description": "Lets your browse your transfers in Put.io.",
       "mode": "view"
     },
     {
       "name": "files",
-      "title": "Put.io Files",
-      "subtitle": "List of files in your put.io account",
-      "description": "Displays a list of files on Put.io.",
+      "title": "Browse Files",
+      "subtitle": "Put.io",
+      "description": "Lets your browse and download your files in Put.io.",
       "mode": "view"
     }
 
