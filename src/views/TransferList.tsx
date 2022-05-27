@@ -3,30 +3,26 @@ import { useEffect, useState } from "react";
 import TransferDetails from "../components/TransferDetails";
 import FileBrowser from "./FileBrowser";
 import PutioAPI, { Transfer } from '@putdotio/api-client'
+import useInterval from '../hooks/useInterval'
 import formatString from "../utils/formatString";
 import formatDate from "../utils/formatDate";
+import timeDifference from "../utils/timeDifference";
 import formatSize from "../utils/formatSize";
 import { preferences } from "../preferences";
 
 function TransferList() {
   // State vars and handlers
   const [transfers, setTransfers] = useState<Transfer[]>();
+  const [cancelTransferId, setCancelTransferId] = useState<number>();
   const [isShowingDetail, setIsShowingDetail] = useState(false);  
   const [error, setError] = useState<Error>();
   const { push } = useNavigation();
 
-  useEffect(() => {
-    if (error) {
-      showToast({
-        style: Toast.Style.Failure,
-        title: "Something went wrong",
-        message: error.message,
-      })  
-    }
-  }, [error]);
+  useHandleError(error!);
 
-  // Init put.io API
-  useEffect(() => {
+  //
+  // Get list of transfers
+  useInterval(() => {
     const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
     putioAPI.setToken(preferences.putioOAuthToken)
 
@@ -51,7 +47,31 @@ function TransferList() {
         console.log('An error occurred while fetching transfers: ', e)
         setError(new Error("Error fetching transfer details from put.io."))
       })
-  }, []);
+  }, 1000);
+
+  //
+  // Delete a transfer
+  useEffect(() => {
+    if (cancelTransferId !== undefined) {
+      const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
+      putioAPI.setToken(preferences.putioOAuthToken)
+  
+      // Query for a list of transfers
+      putioAPI.Transfers.Cancel([cancelTransferId])
+        .then(t => {
+          setCancelTransferId(undefined);   // Clear the delete transfer id.
+          showToast({
+            style: Toast.Style.Success,
+            title: "Success",
+            message: "Transfer was cancelled.",
+          })      
+        })
+        .catch(e => { 
+          console.log('An error occurred while cancelling a transfer: ', e)
+          setError(new Error("Error cancelling transfer."))
+        })  
+    }
+  }, [cancelTransferId]);
 
   return (
     <List isLoading={transfers === undefined}
@@ -64,7 +84,8 @@ function TransferList() {
         switch(transfer.status) {
           case "PREPARING_DOWNLOAD":
           case "DOWNLOADING":
-            icon = { source: Icon.Download, tintColor: Color.Blue };
+          case "COMPLETING":
+              icon = { source: Icon.Download, tintColor: Color.Blue };
             break;
           case "STOPPING":
             icon = { source: Icon.XmarkCircle };
@@ -72,21 +93,24 @@ function TransferList() {
           case "WAITING":
           case "IN_QUEUE":
           case "WAITING_FOR_COMPLETE_QUEUE":
-          case "COMPLETING":
               icon = { source: Icon.Clock };
             break;
           case "ERROR":
             icon = { source: Icon.ExclamationMark, tintColor: Color.Red };
             break;
           case "SEEDING":
+            icon = { source: Icon.Upload, tintColor: Color.Green };
+            break;
           case "COMPLETED":
-            icon = { source: Icon.Checkmark, tintColor: Color.Green };
+            icon = { source: Icon.Checkmark, tintColor: Color.Orange };
             break;
         }
         const accessories = [];
         if (isShowingDetail == false) {
           accessories.push({ text: formatSize(transfer.size, true, 1) });
-          accessories.push({ text: formatDate(new Date(transfer.created_at)) });  
+          if (new Date(transfer.created_at!) <= new Date()) {
+            accessories.push({ text: timeDifference(new Date(), new Date(transfer.created_at!)) });  
+          }
         }
         return (
           <List.Item
@@ -115,6 +139,14 @@ function TransferList() {
                 title={isShowingDetail ? "Hide Transfer Details" : "Show Transfer Details"}
                 onAction={() => setIsShowingDetail((previous) => !previous)}
               />
+              <Action
+              title={"Cancel Transfer"}
+              icon={Icon.Trash}
+              shortcut={{ modifiers: ["cmd"], key: "delete" }}                
+              onAction={() => {
+                setCancelTransferId(transfer.id);
+              }}
+              />  
             </ActionPanel>
           }
           accessories={accessories}
@@ -124,6 +156,19 @@ function TransferList() {
       )}
     </List>
   );
+}
+
+// Handle errors by showing the toast.
+function useHandleError(error: Error) {
+  useEffect(() => {
+    if (error) {
+      showToast({
+        style: Toast.Style.Failure,
+        title: "Something went wrong",
+        message: error.message,
+      })  
+    }
+  }, [error]);
 }
 
 export default TransferList;

@@ -3,6 +3,7 @@ import { Color, Icon, List } from "@raycast/api";
 import formatDate from "../utils/formatDate";
 import formatSize from "../utils/formatSize";
 import PutioAPI, { Transfer } from '@putdotio/api-client'
+import timeDifference from "../utils/timeDifference";
 
 function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
   return (
@@ -11,10 +12,19 @@ function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
         <List.Item.Detail.Metadata>
           <List.Item.Detail.Metadata.Label title="Transfer Details" />
           <List.Item.Detail.Metadata.Separator />
-          <Fragment key="finishedAt">
-            <List.Item.Detail.Metadata.Label title="Finished" text={formatDate(new Date(transferDetails.finished_at!))} icon={Icon.Calendar} />
+          <Fragment key="name">
+            <List.Item.Detail.Metadata.Label title="Name" text={transferDetails.name!} icon={Icon.Document} />
             <List.Item.Detail.Metadata.Separator />
           </Fragment>
+          { 
+            (transferDetails.status == "COMPLETED" || transferDetails.status == "SEEDING") &&
+            (
+              <Fragment key="finishedAt">
+                <List.Item.Detail.Metadata.Label title="Finished" text={`${formatDate(new Date(transferDetails.finished_at!))} (${timeDifference(new Date(), new Date(transferDetails.finished_at!))})`} icon={Icon.Calendar} />
+                <List.Item.Detail.Metadata.Separator />
+              </Fragment>  
+            )
+          }
           <Fragment key="size">
             <List.Item.Detail.Metadata.Label title="Size" text={formatSize(transferDetails.size, true, 2)} icon={Icon.List} />
             <List.Item.Detail.Metadata.Separator />
@@ -23,14 +33,28 @@ function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
             <List.Item.Detail.Metadata.Label title="Status" text={`${transferDetails.status}`} icon={Icon.Checkmark} />
             <List.Item.Detail.Metadata.Separator />
           </Fragment>
+          {
+            (transferDetails.status == "DOWNLOADING") &&
+            (
+              <Fragment key="downloaded">
+                <List.Item.Detail.Metadata.Label title="Downloaded" text={`${formatSize(transferDetails.downloaded!)}`} icon={Icon.Download} />
+                <List.Item.Detail.Metadata.Separator />
+              </Fragment>  
+            )
+          }
           <Fragment key="tracker">
             <List.Item.Detail.Metadata.Label title="Tracker" text={`${transferDetails.tracker}`} icon={Icon.Binoculars} />
             <List.Item.Detail.Metadata.Separator />
           </Fragment>
-          <Fragment key="tracker_message">
-            <List.Item.Detail.Metadata.Label title="Tracker Message" text={transferDetails.tracker_message ? transferDetails.tracker_message : "(empty)"} icon={Icon.Message} />
-            <List.Item.Detail.Metadata.Separator />
-          </Fragment>
+          {
+            (transferDetails.tracker_message !== null) &&
+            (
+              <Fragment key="tracker_message">
+                <List.Item.Detail.Metadata.Label title="Tracker Message" text={transferDetails.tracker_messagegr} icon={Icon.Message} />
+                <List.Item.Detail.Metadata.Separator />
+              </Fragment>  
+            )
+          }
           <Fragment key="ratio">
             <List.Item.Detail.Metadata.Label title="Ratio" text={`${transferDetails.current_ratio}`} icon={Icon.TwoArrowsClockwise} />
             <List.Item.Detail.Metadata.Separator />

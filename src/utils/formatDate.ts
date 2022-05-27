@@ -10,4 +10,5 @@ const formatDate = (date: Date) => {
     minute: "2-digit",
   });
 };
+
 export default formatDate;
