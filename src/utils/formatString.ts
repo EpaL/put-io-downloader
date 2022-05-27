@@ -3,5 +3,5 @@ const formatString = (str: string, ...val: string[]) => {
     str = str.replace(`{${index}}`, val[index]);
   }
   return str;
-}
+};
 export default formatString;

@@ -1,10 +1,10 @@
 import { Color, showToast, Toast, Detail, Form, List } from "@raycast/api";
 import { useEffect, useState } from "react";
-import PutioAPI, { IFile, Transfer } from '@putdotio/api-client'
+import PutioAPI, { IFile, Transfer } from "@putdotio/api-client";
 import { preferences } from "../preferences";
 import { start } from "repl";
 
-function DownloadFile({file, type}: {file: IFile; type: string;}) {
+function DownloadFile({ file, type }: { file: IFile; type: string }) {
   const [error, setError] = useState<Error>();
   const [fileUrl, setFileUrl] = useState<string>();
   const { exec } = require("child_process");
@@ -15,7 +15,7 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
       showToast({
         style: Toast.Style.Failure,
         title: "Something went wrong",
-      })  
+      });
     }
   }, [error]);
 
@@ -24,19 +24,19 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
   // Retrieve the file URL
   useEffect(() => {
     // Init put.io API
-    const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
-    putioAPI.setToken(preferences.putioOAuthToken)
+    const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) });
+    putioAPI.setToken(preferences.putioOAuthToken);
 
     // Get the URL for the file
     putioAPI.File.GetStorageURL(file.id)
-      .then(t => {
-        console.log('File URL is: ', t.data.url); 
-        setFileUrl(t.data.url)
+      .then((t) => {
+        console.log("File URL is: ", t.data.url);
+        setFileUrl(t.data.url);
       })
-      .catch(e => { 
-        console.log('An error occurred while fetching file URL: ', e)
-        setError(new Error("Error fetching file URL details. Check your Client ID and OAuth Token settings."))
-      })
+      .catch((e) => {
+        console.log("An error occurred while fetching file URL: ", e);
+        setError(new Error("Error fetching file URL details. Check your Client ID and OAuth Token settings."));
+      });
   }, [file]);
 
   // Execute the download
@@ -44,9 +44,9 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
     // Once the file URL is retrieved, send the download command.
     if (fileUrl !== undefined && preferences.tvShowDownloadCommand !== null) {
       console.log("Downloading ", fileUrl);
-      var cmd = FormatString(preferences.tvShowDownloadCommand!, fileUrl);
+      const cmd = FormatString(preferences.tvShowDownloadCommand!, fileUrl);
       console.log("Executing command: ", cmd);
-      exec(cmd, (error: { message: any; }, stdout: any, stderr: any) => {
+      exec(cmd, (error: { message: any }, stdout: any, stderr: any) => {
         if (error) {
           console.log(`error: ${error.message}`);
           return;
@@ -56,28 +56,19 @@ function DownloadFile({file, type}: {file: IFile; type: string;}) {
           return;
         }
         console.log(`stdout: ${stdout}`);
-    });
+      });
     }
   }, [fileUrl]);
 
   if (type == "TVSHOW" && fileUrl !== null) {
-    return (
-      <Detail
-        markdown={formatDownloadInfo(file, fileUrl!)}>
-      </Detail>
-    );  
+    return <Detail markdown={formatDownloadInfo(file, fileUrl!)}></Detail>;
   } else {
-    return (
-      <Form>
-
-      </Form>
-    );  
+    return <Form></Form>;
   }
 }
 
-function formatDownloadInfo(file: IFile, fileUrl: string): string
-{
-  var startingDownload: string = "";
+function formatDownloadInfo(file: IFile, fileUrl: string): string {
+  let startingDownload = "";
 
   if (fileUrl) {
     startingDownload = "Starting download [${fileUrl}](${fileUrl})";
