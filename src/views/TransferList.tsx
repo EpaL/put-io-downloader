@@ -7,6 +7,7 @@ import useInterval from '../hooks/useInterval'
 import formatString from "../utils/formatString";
 import formatDate from "../utils/formatDate";
 import timeDifference from "../utils/timeDifference";
+import changeTimezone from "../utils/changeTimezone";
 import formatSize from "../utils/formatSize";
 import { preferences } from "../preferences";
 
@@ -108,8 +109,9 @@ function TransferList() {
         const accessories = [];
         if (isShowingDetail == false) {
           accessories.push({ text: formatSize(transfer.size, true, 1) });
-          if (new Date(transfer.created_at!) <= new Date()) {
-            accessories.push({ text: timeDifference(new Date(), new Date(transfer.created_at!)) });  
+          const now = changeTimezone(new Date(), "UTC");
+          if (new Date(transfer.created_at!) <= now) {
+            accessories.push({ text: timeDifference(now, new Date(transfer.created_at!)) });  
           }
         }
         return (
@@ -125,20 +127,20 @@ function TransferList() {
           }
           actions={
             <ActionPanel title="Transfer Actions">
-              {
-                transfer.file_id && (
-                  <Action
-                  icon={Icon.Document}
-                  title="Browse"
-                  onAction={() => push(<FileBrowser parent_file_id={Number(transfer.file_id)} />)}
-                  />
-                )
-              }
               <Action
                 icon={Icon.Sidebar}
                 title={isShowingDetail ? "Hide Transfer Details" : "Show Transfer Details"}
                 onAction={() => setIsShowingDetail((previous) => !previous)}
               />
+              {
+                transfer.file_id && (
+                  <Action
+                  icon={Icon.Document}
+                  title="Go To File"
+                  onAction={() => push(<FileBrowser parent_file_id={Number(transfer.file_id)} />)}
+                  />
+                )
+              }
               <Action
               title={"Cancel Transfer"}
               icon={Icon.Trash}

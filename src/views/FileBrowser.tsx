@@ -5,8 +5,11 @@ import FileDetails from "../components/FileDetails";
 import formatString from "../utils/formatString";
 import formatDate from "../utils/formatDate";
 import formatSize from "../utils/formatSize";
+import changeTimezone from "../utils/changeTimezone";
+import timeDifference from "../utils/timeDifference";
 import PutioAPI, { IFile, Transfer  } from '@putdotio/api-client'
 import { preferences } from "../preferences";
+import { create } from "domain";
 
 function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   // State vars and handlers
@@ -163,7 +166,12 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
           Object.values(files).map(file => {
           const accessories = [];
           accessories.push({ text: formatSize(file.size, true, 1) });
-          accessories.push({ text: formatDate(new Date(file.created_at)) });
+          // created_at is in UTC so we need to provide a UTC relative date for comparison.
+          const now = changeTimezone(new Date(), "UTC");
+          const created_at = new Date(file.created_at!);
+          if (created_at <= now) {
+            accessories.push({ text: timeDifference(now, created_at) });  
+          }
           return (
             <List.Item
             key={`${file.id}`}

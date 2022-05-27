@@ -4,8 +4,10 @@ import formatDate from "../utils/formatDate";
 import formatSize from "../utils/formatSize";
 import PutioAPI, { Transfer } from '@putdotio/api-client'
 import timeDifference from "../utils/timeDifference";
+import changeTimezone from "../utils/changeTimezone";
 
 function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
+  const now = changeTimezone(new Date(), "UTC");
   return (
     <List.Item.Detail
       metadata={
@@ -20,7 +22,7 @@ function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
             (transferDetails.status == "COMPLETED" || transferDetails.status == "SEEDING") &&
             (
               <Fragment key="finishedAt">
-                <List.Item.Detail.Metadata.Label title="Finished" text={`${formatDate(new Date(transferDetails.finished_at!))} (${timeDifference(new Date(), new Date(transferDetails.finished_at!))})`} icon={Icon.Calendar} />
+                <List.Item.Detail.Metadata.Label title="Finished" text={`${formatDate(new Date(transferDetails.finished_at!))} (${timeDifference(now, new Date(transferDetails.finished_at!))})`} icon={Icon.Calendar} />
                 <List.Item.Detail.Metadata.Separator />
               </Fragment>  
             )
