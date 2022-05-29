@@ -39,7 +39,7 @@ function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
             (transferDetails.status == "DOWNLOADING") &&
             (
               <Fragment key="downloaded">
-                <List.Item.Detail.Metadata.Label title="Downloaded" text={`${formatSize(transferDetails.downloaded!)}`} icon={Icon.Download} />
+                <List.Item.Detail.Metadata.Label title="Downloaded" text={`${formatSize(transferDetails.downloaded!, true, 2)}`} icon={Icon.Download} />
                 <List.Item.Detail.Metadata.Separator />
               </Fragment>  
             )
@@ -52,19 +52,29 @@ function TransferDetails({transferDetails}: {transferDetails: Transfer}) {
             (transferDetails.tracker_message !== null) &&
             (
               <Fragment key="tracker_message">
-                <List.Item.Detail.Metadata.Label title="Tracker Message" text={transferDetails.tracker_messagegr} icon={Icon.Message} />
+                <List.Item.Detail.Metadata.Label title="Tracker Message" text={transferDetails.tracker_message} icon={Icon.Message} />
                 <List.Item.Detail.Metadata.Separator />
               </Fragment>  
             )
           }
-          <Fragment key="ratio">
-            <List.Item.Detail.Metadata.Label title="Ratio" text={`${transferDetails.current_ratio}`} icon={Icon.TwoArrowsClockwise} />
-            <List.Item.Detail.Metadata.Separator />
-          </Fragment>
-          <Fragment key="peers">
-            <List.Item.Detail.Metadata.Label title="Peers" text={`${transferDetails.peers_getting_from_us} sending ${transferDetails.peers_sending_to_us} receiving`} icon={Icon.Person} />
-            <List.Item.Detail.Metadata.Separator />
-          </Fragment>
+          { 
+            (transferDetails.status == "COMPLETED" || transferDetails.status == "SEEDING") &&
+            (
+              <Fragment key="ratio">
+                <List.Item.Detail.Metadata.Label title="Ratio" text={`${transferDetails.current_ratio}`} icon={Icon.TwoArrowsClockwise} />
+                <List.Item.Detail.Metadata.Separator />
+              </Fragment>
+            )
+          }
+          {
+            (transferDetails.status == "COMPLETED" || transferDetails.status == "SEEDING") &&
+            (
+              <Fragment key="peers">
+                <List.Item.Detail.Metadata.Label title="Peers" text={`${transferDetails.peers_getting_from_us} sending ${transferDetails.peers_sending_to_us} receiving`} icon={Icon.Person} />
+                <List.Item.Detail.Metadata.Separator />
+              </Fragment>
+            )            
+          }
         </List.Item.Detail.Metadata>
       }
     />

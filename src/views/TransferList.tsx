@@ -103,12 +103,20 @@ function TransferList() {
             icon = { source: Icon.Upload, tintColor: Color.Green };
             break;
           case "COMPLETED":
-            icon = { source: Icon.Checkmark, tintColor: Color.Orange };
+            icon = { source: Icon.Checkmark };
             break;
         }
         const accessories = [];
         if (isShowingDetail == false) {
-          accessories.push({ text: formatSize(transfer.size, true, 1) });
+          switch(transfer.status) {
+            case "DOWNLOADING":
+              const downloadPercent = parseFloat(String((transfer.downloaded / transfer.size) * 100)).toFixed(1);
+              accessories.push({ text: `${downloadPercent}%` });
+              break;
+            default:              
+              accessories.push({ text: formatSize(transfer.size, true, 1) });
+              break;
+          }
           const now = changeTimezone(new Date(), "UTC");
           if (new Date(transfer.created_at!) <= now) {
             accessories.push({ text: timeDifference(now, new Date(transfer.created_at!)) });  
