@@ -45,20 +45,36 @@
       "placeholder": "Put.io OAuth Token"
     },
     {
-      "name": "tvShowDownloadCommand",
-      "description": "Command to run to download a TV Show",
+      "name": "actionTitle1",
+      "description": "Title of the first action. e.g. 'Download to my local machine'",
       "type": "textfield",
       "required": false,
-      "title": "TV Show Download Command",
-      "placeholder": "TV Show download command"
+      "title": "Action Title #1",
+      "placeholder": "Download to my local machine"
     },
     {
-      "name": "movieDownloadCommand",
-      "description": "Command to run to download a Movie",
+      "name": "actionCommand1",
+      "description": "The command to run for this action. Use {0} to insert the file URL. e.g. 'wget {0}'",
       "type": "textfield",
       "required": false,
-      "title": "Movie Download Command",
-      "placeholder": "Movie download command"
+      "title": "Action Command #1",
+      "placeholder": "wget {0}"
+    },
+    {
+      "name": "actionTitle2",
+      "description": "Title of the second action. e.g. 'Send to Google Drive'",
+      "type": "textfield",
+      "required": false,
+      "title": "Action Title #2",
+      "placeholder": "Send to Google Drive"
+    },
+    {
+      "name": "actionCommand2",
+      "description": "The command to run for this action. Use {0} to insert the file URL. e.g. 'wget {0}'",
+      "type": "textfield",
+      "required": false,
+      "title": "Action Command #2",
+      "placeholder": "wget {0}"
     }
   ],
   "dependencies": {

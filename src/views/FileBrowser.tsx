@@ -18,6 +18,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   const [files, setFiles] = useState<IFile[]>();
   const [selectedFileId, setSelectedFileId] = useState<number>();
   const [downloadType, setDownloadType] = useState<string>();
+  const [fileAction, setFileAction] = useState<number>();
   const [isShowingDetail, setIsShowingDetail] = useState(false);  
   const [error, setError] = useState<Error>();
   const { exec } = require("child_process");
@@ -26,7 +27,6 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   useEffect(() => {
     if (error) {
       showToast({
-
         style: Toast.Style.Failure,
         title: "Something went wrong",
         message: error.message,
@@ -78,7 +78,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
       const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
       putioAPI.setToken(preferences.putioOAuthToken)
 
-      // Query for a list of files and then reverse-sort by creation date/time
+      // Query for the file info, get the URL of the file and store it in the fileUrl state var.
       putioAPI.File.GetStorageURL(selectedFileId)
         .then(t => {
           setFileUrl(t.data.url)
@@ -91,15 +91,18 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   }, [selectedFileId]);
 
   //
-  // Handle initiating file downloads
+  // Handle initiating file actions
   useEffect(() => {
-    if (fileUrl !== undefined && downloadType !== undefined) {
+    if (fileUrl !== undefined && fileAction !== undefined) {
       var cmd = null
-      console.log("Downloading ", fileUrl);
-      if (downloadType == "TVSHOW" && preferences.tvShowDownloadCommand !== null) {
-        cmd = formatString(preferences.tvShowDownloadCommand!, fileUrl);
-      } else if (downloadType == "MOVIE" && preferences.movieDownloadCommand !== null) {
-        cmd = formatString(preferences.movieDownloadCommand!, fileUrl);
+      console.log("Preparing action #%d on %s", fileAction, fileUrl);
+      switch(fileAction) {
+        case 1:
+          cmd = formatString(preferences.actionCommand1!, fileUrl);
+          break;
+        case 2:
+          cmd = formatString(preferences.actionCommand2!, fileUrl);
+          break;
       }
       console.log("Executing command: ", cmd);
       exec(cmd, (error: { message: any; }, stdout: any, stderr: any) => {
@@ -117,7 +120,6 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
           return;
         }
         console.log(`stdout: ${stdout}`);
-
         showToast({
           style: Toast.Style.Success,
           title: "Success",
@@ -125,10 +127,10 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
         })  
 
         // Null out the download type so we can start another download again in the future.
-        setDownloadType(undefined);
+        setFileAction(undefined);
     });
     }
-  }, [downloadType]);  
+  }, [fileAction]);  
 
   // If neither files or file are populated yet, display an empty list with the loading animation.
   if (files === undefined && file === undefined) {
@@ -187,27 +189,30 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
                 />
               { fileUrl && (
                   <Action.OpenInBrowser url={fileUrl} />              
-                )}
+                )
+              }
               { fileUrl && (
                   <Action
-                  title={"Download TV Show"}
+                  title={preferences.actionTitle1 === null ? "(Action #1 unconfigured)" : preferences.actionTitle1}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "t" }}                
+                  shortcut={{ modifiers: ["cmd"], key: "1" }}                
                   onAction={() => {
-                    setDownloadType("TVSHOW");
+                    setFileAction(1);
                   }}
                   />  
-                )}
+                )
+              }
               { fileUrl && (
                   <Action
-                  title="Download Movie"
+                  title={preferences.actionTitle2 === null ? "(Action #2 unconfigured)" : preferences.actionTitle2}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "m" }}                
+                  shortcut={{ modifiers: ["cmd"], key: "2" }}                
                   onAction={() => {
-                    setDownloadType("MOVIE");
-                  }}             
+                    setFileAction(2);
+                  }}
                   />  
-                )}
+                )
+              }
               </ActionPanel>
             }
             accessories={accessories}
@@ -234,27 +239,30 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
             <ActionPanel title="File Actions">
               { fileUrl && (
                   <Action.OpenInBrowser url={fileUrl} />              
-                )}
+                )
+              }
               { fileUrl && (
                   <Action
-                  title={"Download TV Show"}
+                  title={preferences.actionTitle1 === null ? preferences.actionTitle1 : "(Action #1 unconfigured)"}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "t" }}                
+                  shortcut={{ modifiers: ["cmd"], key: "1" }}                
                   onAction={() => {
-                    setDownloadType("TVSHOW");
+                    setFileAction(1);
                   }}
                   />  
-                )}
+                )
+              }
               { fileUrl && (
                   <Action
-                  title="Download Movie"
+                  title={preferences.actionTitle2 === null ? preferences.actionTitle2 : "(Action #2 unconfigured)"}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "m" }}                
+                  shortcut={{ modifiers: ["cmd"], key: "2" }}                
                   onAction={() => {
-                    setDownloadType("MOVIE");
-                  }}             
+                    setFileAction(2);
+                  }}
                   />  
-                )}
+                )
+              }
             </ActionPanel>
           }
           >
