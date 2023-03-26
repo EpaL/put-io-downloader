@@ -1,17 +1,16 @@
 import { ActionPanel, showToast, Toast, showHUD, Detail, List, Action, Icon, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
-import DownloadFile from "../components/DownloadFile";
 import FileDetails from "../components/FileDetails";
 import formatString from "../utils/formatString";
 import formatDate from "../utils/formatDate";
 import formatSize from "../utils/formatSize";
 import changeTimezone from "../utils/changeTimezone";
 import timeDifference from "../utils/timeDifference";
-import PutioAPI, { IFile, Transfer  } from '@putdotio/api-client'
+import PutioAPI, { IFile, Transfer } from "@putdotio/api-client";
 import { preferences } from "../preferences";
 import { create } from "domain";
 
-function FileBrowser({parent_file_id}: {parent_file_id: number}) {
+function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
   // State vars and handlers
   const [file, setFile] = useState<IFile>();
   const [fileUrl, setFileUrl] = useState<string>();
@@ -19,7 +18,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   const [selectedFileId, setSelectedFileId] = useState<number>();
   const [downloadType, setDownloadType] = useState<string>();
   const [fileAction, setFileAction] = useState<number>();
-  const [isShowingDetail, setIsShowingDetail] = useState(false);  
+  const [isShowingDetail, setIsShowingDetail] = useState(false);
   const [error, setError] = useState<Error>();
   const { exec } = require("child_process");
   const { push } = useNavigation();
@@ -30,7 +29,7 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
         style: Toast.Style.Failure,
         title: "Something went wrong",
         message: error.message,
-      })  
+      });
     }
   }, [error]);
 
@@ -38,36 +37,36 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   // Populate the list of files (if a folder), or information about the file (if a single file).
   useEffect(() => {
     // Init put.io API
-    const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
-    putioAPI.setToken(preferences.putioOAuthToken)
+    const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) });
+    putioAPI.setToken(preferences.putioOAuthToken);
 
     // Query for a list of files and then reverse-sort by creation date/time
     putioAPI.Files.Query(parent_file_id)
-      .then(t => {
+      .then((t) => {
         if (t.data.files.length == 0) {
           // If the files array is empty, it means this is just a file, not a directory.
           // Set the file to the 'parent' object, which contains the file info.
           setFile(t.data.parent);
           // Get the URL of the file
           putioAPI.File.GetStorageURL(t.data.parent.id)
-            .then(t => {
-              console.log('File URL is: ', t.data.url); 
-              setFileUrl(t.data.url)
+            .then((t) => {
+              console.log("File URL is: ", t.data.url);
+              setFileUrl(t.data.url);
             })
-            .catch(e => { 
-              console.log('An error occurred while fetching file URL: ', e)
-              setError(new Error("Error fetching file URL details. Check your Client ID and OAuth Token settings."))
+            .catch((e) => {
+              console.log("An error occurred while fetching file URL: ", e);
+              setError(new Error("Error fetching file URL details. Check your Client ID and OAuth Token settings."));
             });
         } else {
           // The files array isn't empty, which means this is a folder.
           // Set the files object to the 'files' array, which contains the list of files in the folder.
-          setFiles(t.data.files)
+          setFiles(t.data.files);
         }
       })
-      .catch(e => { 
-        console.log('An error occurred while fetching files: ', e)
-        setError(new Error("Error fetching file details. Check your Client ID and OAuth Token settings."))
-      })
+      .catch((e) => {
+        console.log("An error occurred while fetching files: ", e);
+        setError(new Error("Error fetching file details. Check your Client ID and OAuth Token settings."));
+      });
   }, [parent_file_id]);
 
   //
@@ -75,28 +74,28 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
   useEffect(() => {
     if (selectedFileId !== undefined) {
       // Init put.io API
-      const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) })
-      putioAPI.setToken(preferences.putioOAuthToken)
+      const putioAPI = new PutioAPI({ clientID: Number(preferences.putioClientId) });
+      putioAPI.setToken(preferences.putioOAuthToken);
 
       // Query for the file info, get the URL of the file and store it in the fileUrl state var.
       putioAPI.File.GetStorageURL(selectedFileId)
-        .then(t => {
-          setFileUrl(t.data.url)
+        .then((t) => {
+          setFileUrl(t.data.url);
         })
-        .catch(e => { 
+        .catch((e) => {
           // console.log('An error occurred while fetching file URL: ', e)
           // setError(new Error("Error fetching file URL details. Check your Client ID and OAuth Token settings."))
-        })
-    }  
+        });
+    }
   }, [selectedFileId]);
 
   //
   // Handle initiating file actions
   useEffect(() => {
     if (fileUrl !== undefined && fileAction !== undefined) {
-      var cmd = null
+      let cmd = null;
       console.log("Preparing action #%d on %s", fileAction, fileUrl);
-      switch(fileAction) {
+      switch (fileAction) {
         case 1:
           cmd = formatString(preferences.actionCommand1!, fileUrl);
           break;
@@ -105,14 +104,14 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
           break;
       }
       console.log("Executing command: ", cmd);
-      exec(cmd, (error: { message: any; }, stdout: any, stderr: any) => {
+      exec(cmd, (error: { message: any }, stdout: any, stderr: any) => {
         if (error) {
           console.log(`error: ${error.message}`);
           showToast({
             style: Toast.Style.Failure,
             title: "Error",
             message: "Starting download failed.",
-          })    
+          });
           return;
         }
         if (stderr) {
@@ -124,101 +123,90 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
           style: Toast.Style.Success,
           title: "Success",
           message: "⬇️ Download started.",
-        })  
+        });
 
         // Null out the download type so we can start another download again in the future.
         setFileAction(undefined);
-    });
+      });
     }
-  }, [fileAction]);  
+  }, [fileAction]);
 
   // If neither files or file are populated yet, display an empty list with the loading animation.
   if (files === undefined && file === undefined) {
     return (
-      <List isLoading={true}
-            navigationTitle="Put.io Files"
-      >
-        <List.EmptyView
-          icon={{ source: "putio-icon.png" }}
-          title="Fetching the list of files..."
-        />        
+      <List isLoading={true} navigationTitle="Put.io Files">
+        <List.EmptyView icon={{ source: "putio-icon.png" }} title="Fetching the list of files..." />
       </List>
-    )
+    );
   } else if (files !== undefined && files?.length > 0) {
     //
     // List of files
     return (
-      <List isLoading={files === undefined && file === undefined}
-            isShowingDetail={isShowingDetail}
-            navigationTitle="Put.io Files"
-            onSelectionChange={(selectedFileId) => {
-              if (selectedFileId === undefined) {
-                return;
-              }
-              setFileUrl(undefined); // Clear the file URL because we're about to query the new one.
-              setSelectedFileId(Number(selectedFileId));
-            }}            
+      <List
+        isLoading={files === undefined && file === undefined}
+        isShowingDetail={isShowingDetail}
+        navigationTitle="Put.io Files"
+        onSelectionChange={(selectedFileId) => {
+          if (selectedFileId === undefined) {
+            return;
+          }
+          setFileUrl(undefined); // Clear the file URL because we're about to query the new one.
+          setSelectedFileId(Number(selectedFileId));
+        }}
       >
-        { files.length == 0 ? (
-          <List.EmptyView
-            icon={{ source: "putio-icon.png" }}
-            title="There doesn't seem to be anything here."
-          />
-        ) : files && 
-          Object.values(files).map(file => {
-          const accessories = [];
-          accessories.push({ text: formatSize(file.size, true, 1) });
-          // created_at is in UTC so we need to provide a UTC relative date for comparison.
-          const now = changeTimezone(new Date(), "UTC");
-          const created_at = new Date(file.created_at!);
-          if (created_at <= now) {
-            accessories.push({ text: timeDifference(now, created_at) });  
-          }
-          return (
-            <List.Item
-            key={`${file.id}`}
-            id={`${file.id}`}
-            icon={`${file.icon}`}
-            title={`${file.name}`}
-            actions={
-              <ActionPanel title="Actions">
-                <Action
-                title={"Browse File(s)"}
-                icon={Icon.List}
-                onAction={() => push(<FileBrowser parent_file_id={file.id} />)}
-                />
-              { fileUrl && (
-                  <Action.OpenInBrowser url={fileUrl} />              
-                )
-              }
-              { fileUrl && (
-                  <Action
-                  title={preferences.actionTitle1 === null ? "(Action #1 unconfigured)" : preferences.actionTitle1}
-                  icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "1" }}                
-                  onAction={() => {
-                    setFileAction(1);
-                  }}
-                  />  
-                )
-              }
-              { fileUrl && (
-                  <Action
-                  title={preferences.actionTitle2 === null ? "(Action #2 unconfigured)" : preferences.actionTitle2}
-                  icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "2" }}                
-                  onAction={() => {
-                    setFileAction(2);
-                  }}
-                  />  
-                )
-              }
-              </ActionPanel>
+        {files.length == 0 ? (
+          <List.EmptyView icon={{ source: "putio-icon.png" }} title="There doesn't seem to be anything here." />
+        ) : (
+          files &&
+          Object.values(files).map((file) => {
+            const accessories = [];
+            accessories.push({ text: formatSize(file.size, true, 1) });
+            // created_at is in UTC so we need to provide a UTC relative date for comparison.
+            const now = changeTimezone(new Date(), "UTC");
+            const created_at = new Date(file.created_at!);
+            if (created_at <= now) {
+              accessories.push({ text: timeDifference(now, created_at) });
             }
-            accessories={accessories}
-            />  
-          )
-          }
+            return (
+              <List.Item
+                key={`${file.id}`}
+                id={`${file.id}`}
+                icon={`${file.icon}`}
+                title={`${file.name}`}
+                actions={
+                  <ActionPanel title="Actions">
+                    <Action
+                      title={"Browse File(s)"}
+                      icon={Icon.List}
+                      onAction={() => push(<FileBrowser parent_file_id={file.id} />)}
+                    />
+                    {fileUrl && <Action.OpenInBrowser url={fileUrl} />}
+                    {fileUrl && (
+                      <Action
+                        title={preferences.actionTitle1 ? preferences.actionTitle1 : "(Action #1 Unconfigured)"}
+                        icon={Icon.Download}
+                        shortcut={{ modifiers: ["cmd"], key: "1" }}
+                        onAction={() => {
+                          setFileAction(1);
+                        }}
+                      />
+                    )}
+                    {fileUrl && (
+                      <Action
+                        title={preferences.actionTitle2 ? preferences.actionTitle2 : "(Action #2 Unconfigured)"}
+                        icon={Icon.Download}
+                        shortcut={{ modifiers: ["cmd"], key: "2" }}
+                        onAction={() => {
+                          setFileAction(2);
+                        }}
+                      />
+                    )}
+                  </ActionPanel>
+                }
+                accessories={accessories}
+              />
+            );
+          })
         )}
       </List>
     );
@@ -229,60 +217,45 @@ function FileBrowser({parent_file_id}: {parent_file_id: number}) {
       return (
         <Detail
           markdown={formatFileInfo(file)}
-          metadata={
-            (
-              <FileDetails file={file}
-              />
-            )
-          }
+          metadata={<FileDetails file={file} />}
           actions={
             <ActionPanel title="File Actions">
-              { fileUrl && (
-                  <Action.OpenInBrowser url={fileUrl} />              
-                )
-              }
-              { fileUrl && (
-                  <Action
-                  title={preferences.actionTitle1 === null ? preferences.actionTitle1 : "(Action #1 unconfigured)"}
+              {fileUrl && <Action.OpenInBrowser url={fileUrl} />}
+              {fileUrl && (
+                <Action
+                  title={preferences.actionTitle1 === null ? preferences.actionTitle1 : "(Action #1 Unconfigured)"}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "1" }}                
+                  shortcut={{ modifiers: ["cmd"], key: "1" }}
                   onAction={() => {
                     setFileAction(1);
                   }}
-                  />  
-                )
-              }
-              { fileUrl && (
-                  <Action
-                  title={preferences.actionTitle2 === null ? preferences.actionTitle2 : "(Action #2 unconfigured)"}
+                />
+              )}
+              {fileUrl && (
+                <Action
+                  title={preferences.actionTitle2 === null ? preferences.actionTitle2 : "(Action #2 Unconfigured)"}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "2" }}                
+                  shortcut={{ modifiers: ["cmd"], key: "2" }}
                   onAction={() => {
                     setFileAction(2);
                   }}
-                  />  
-                )
-              }
+                />
+              )}
             </ActionPanel>
           }
-          >
-        </Detail>
+        ></Detail>
       );
     } else {
       return (
         <List>
-          <List.EmptyView
-            icon={{ source: "putio-icon.png" }}
-            title="There doesn't seem to be anything here."
-          />
+          <List.EmptyView icon={{ source: "putio-icon.png" }} title="There doesn't seem to be anything here." />
         </List>
-      )
+      );
     }
   }
 }
 
-function formatFileInfo(file: IFile): string
-{
+function formatFileInfo(file: IFile): string {
   return `
 # ${file.name}
 ![](${file.screenshot})

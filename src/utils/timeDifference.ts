@@ -7,7 +7,7 @@ const timeDifference = (current: Date, previous: Date) => {
   const msPerMonth = msPerDay * 30;
   const msPerYear = msPerDay * 365;
 
-  const elapsed = current - previous;
+  const elapsed = Number(current) - Number(previous);
 
   if (elapsed < msPerMinute) {
     return Math.round(elapsed / 1000) + "s";

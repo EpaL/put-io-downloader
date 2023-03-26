@@ -1,3 +1,3 @@
-# Put.io Downloader Changelog
+# Put.io Changelog
 
-## [Initial Version] - 2022-05-20
+## [Initial Version] - 2023-03-26
