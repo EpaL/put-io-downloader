@@ -1,6 +1,7 @@
 import { ActionPanel, showToast, Toast, Detail, List, Action, Icon, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
 import FileDetails from "../components/FileDetails";
+import doFileAction from "../utils/fileAction";
 import formatString from "../utils/formatString";
 import formatSize from "../utils/formatSize";
 import changeTimezone from "../utils/changeTimezone";
@@ -182,7 +183,7 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
                         icon={Icon.Download}
                         shortcut={{ modifiers: ["cmd"], key: "1" }}
                         onAction={() => {
-                          setFileAction(1);
+                          doFileAction("action1", fileUrl);
                         }}
                       />
                     )}
@@ -192,7 +193,7 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
                         icon={Icon.Download}
                         shortcut={{ modifiers: ["cmd"], key: "2" }}
                         onAction={() => {
-                          setFileAction(2);
+                          doFileAction("action2", fileUrl);
                         }}
                       />
                     )}
@@ -222,7 +223,7 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
                   icon={Icon.Download}
                   shortcut={{ modifiers: ["cmd"], key: "1" }}
                   onAction={() => {
-                    setFileAction(1);
+                    doFileAction("action1", fileUrl);
                   }}
                 />
               )}
@@ -232,7 +233,7 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
                   icon={Icon.Download}
                   shortcut={{ modifiers: ["cmd"], key: "2" }}
                   onAction={() => {
-                    setFileAction(2);
+                    doFileAction("action2", fileUrl);
                   }}
                 />
               )}
