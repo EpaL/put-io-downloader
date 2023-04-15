@@ -3,17 +3,9 @@ import { preferences } from "../preferences";
 import { exec } from "child_process";
 import formatString from "../utils/formatString";
 
-const doFileAction = (fileAction: string, fileUrl: string) => {
-  if (fileUrl !== undefined && fileAction !== undefined) {
-    let cmd = "";
-    switch (fileAction) {
-      case "action1":
-        cmd = formatString(preferences.actionCommand1 ? preferences.actionCommand1 : "(no command defined)", fileUrl);
-        break;
-      case "action2":
-        cmd = formatString(preferences.actionCommand2 ? preferences.actionCommand2 : "(no command defined)", fileUrl);
-        break;
-    }
+const doFileAction = (actionCommand: string | undefined, fileUrl: string) => {
+  if (fileUrl !== undefined && actionCommand !== undefined) {
+    let cmd = formatString(actionCommand ? actionCommand : "(no command defined)", fileUrl);
     console.log("Executing command: " + cmd);
     exec(cmd, (error: Error | null, stdout: string, stderr: string) => {
       if (error) {
@@ -21,7 +13,7 @@ const doFileAction = (fileAction: string, fileUrl: string) => {
         showToast({
           style: Toast.Style.Failure,
           title: "Error",
-          message: "Starting download failed.",
+          message: "Custom Action failed.",
         });
         return;
       }
@@ -33,7 +25,7 @@ const doFileAction = (fileAction: string, fileUrl: string) => {
       showToast({
         style: Toast.Style.Success,
         title: "Success",
-        message: "⬇️ Download started.",
+        message: "⬇️ Custom Action success.",
       });
     });
   }

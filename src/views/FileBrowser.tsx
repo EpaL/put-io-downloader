@@ -1,4 +1,4 @@
-import { ActionPanel, showToast, Toast, Detail, List, Action, Icon, useNavigation } from "@raycast/api";
+import { ActionPanel, showToast, Toast, Detail, List, Action, Icon, useNavigation, openExtensionPreferences } from "@raycast/api";
 import { useEffect, useState } from "react";
 import FileDetails from "../components/FileDetails";
 import doFileAction from "../utils/fileAction";
@@ -179,21 +179,29 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
                     {fileUrl && <Action.OpenInBrowser url={fileUrl} />}
                     {fileUrl && (
                       <Action
-                        title={preferences.actionTitle1 ? preferences.actionTitle1 : "(Action #1 Unconfigured)"}
+                        title={preferences.actionTitle1 ? preferences.actionTitle1 : "(Configure Custom Action #1)"}
                         icon={Icon.Download}
-                        shortcut={{ modifiers: ["cmd"], key: "1" }}
+                        shortcut={{ modifiers: ["cmd", "shift"], key: "1" }}
                         onAction={() => {
-                          doFileAction("action1", fileUrl);
+                          if (preferences.actionTitle1 == "") {
+                            openExtensionPreferences();
+                          } else {
+                            doFileAction(preferences.actionCommand1, fileUrl);
+                          }
                         }}
                       />
                     )}
                     {fileUrl && (
                       <Action
-                        title={preferences.actionTitle2 ? preferences.actionTitle2 : "(Action #2 Unconfigured)"}
+                        title={preferences.actionTitle2 ? preferences.actionTitle2 : "(Configure Custom Action #2)"}
                         icon={Icon.Download}
-                        shortcut={{ modifiers: ["cmd"], key: "2" }}
+                        shortcut={{ modifiers: ["cmd", "shift"], key: "2" }}
                         onAction={() => {
-                          doFileAction("action2", fileUrl);
+                          if (preferences.actionTitle2 == "") {
+                            openExtensionPreferences();
+                          } else {
+                            doFileAction(preferences.actionCommand2, fileUrl);
+                          }
                         }}
                       />
                     )}

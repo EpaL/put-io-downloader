@@ -1,6 +1,6 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "put-io-downloader",
+  "name": "put-io",
   "title": "Put.io",
   "description": "Browse files and transfers on Put.io.",
   "icon": "putio-icon.png",
@@ -48,7 +48,7 @@
       "description": "Title of the first action. e.g. 'Download to my local machine'",
       "type": "textfield",
       "required": false,
-      "title": "Action Title #1",
+      "title": "Custom Action Title #1 (optional)",
       "placeholder": "Download to my local machine"
     },
     {
@@ -56,7 +56,7 @@
       "description": "The command to run for this action. Use {0} to insert the file URL. e.g. 'wget {0}'",
       "type": "textfield",
       "required": false,
-      "title": "Action Command #1",
+      "title": "Custom Action Command #1 (optional)",
       "placeholder": "wget {0}"
     },
     {
@@ -64,16 +64,16 @@
       "description": "Title of the second action. e.g. 'Send to Google Drive'",
       "type": "textfield",
       "required": false,
-      "title": "Action Title #2",
-      "placeholder": "Send to Google Drive"
+      "title": "Custom Action Title #2 (optional)",
+      "placeholder": "Multi-threaded download"
     },
     {
       "name": "actionCommand2",
       "description": "The command to run for this action. Use {0} to insert the file URL. e.g. 'wget {0}'",
       "type": "textfield",
       "required": false,
-      "title": "Action Command #2",
-      "placeholder": "wget {0}"
+      "title": "Custom Action Command #2 (optional)",
+      "placeholder": "aria2c -x 5 -s 4 -k 1M --secure-protocol=auto '{0}'"
     }
   ],
   "dependencies": {
