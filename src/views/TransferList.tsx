@@ -76,7 +76,9 @@ function TransferList() {
 
   return (
     <List isLoading={transfers === undefined} isShowingDetail={isShowingDetail} navigationTitle="Put.io Transfers">
-      {transfers &&
+      { transfers && transfers.length == 0 ? (
+        <List.EmptyView icon={{ source: "putio-icon.png" }} title="There doesn't seem to be anything here." />
+      ) : transfers &&
         Object.values(transfers).map((transfer) => {
           let icon = null;
           let downloadPercent = "";
@@ -162,7 +164,6 @@ function TransferList() {
 function useHandleError(error?: Error) {
   useEffect(() => {
     if (error) {
-      console.log("Have an error: ", error);
       showToast({
         style: Toast.Style.Failure,
         title: "Something went wrong",

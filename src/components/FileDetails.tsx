@@ -6,6 +6,7 @@ import PutioAPI, { IFile } from "@putdotio/api-client";
 function FileDetails({ file }: { file: IFile }) {
   return (
     <Detail.Metadata>
+      <Detail.Metadata.Label title="Name" text={file.name} icon={Icon.BlankDocument} />
       <Detail.Metadata.Label title="Size" text={formatSize(file.size, true, 2)} icon={Icon.List} />
       <Detail.Metadata.Label title="Created" text={formatDate(new Date(file.created_at))} icon={Icon.Calendar} />
       <Detail.Metadata.TagList title="Type">

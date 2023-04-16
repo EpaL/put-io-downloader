@@ -2,21 +2,19 @@ import { ActionPanel, showToast, Toast, Detail, List, Action, Icon, useNavigatio
 import { useEffect, useState } from "react";
 import FileDetails from "../components/FileDetails";
 import doFileAction from "../utils/fileAction";
-import formatString from "../utils/formatString";
 import formatSize from "../utils/formatSize";
+import formatFileInfo from "../utils/formatFileInfo";
 import changeTimezone from "../utils/changeTimezone";
 import timeDifference from "../utils/timeDifference";
 import PutioAPI, { IFile } from "@putdotio/api-client";
 import { preferences } from "../preferences";
-import { exec } from "child_process";
 
 function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
   // State vars and handlers
   const [file, setFile] = useState<IFile>();
-  const [fileUrl, setFileUrl] = useState<string>();
   const [files, setFiles] = useState<IFile[]>();
+  const [fileUrl, setFileUrl] = useState<string>();
   const [selectedFileId, setSelectedFileId] = useState<number>();
-  const [fileAction, setFileAction] = useState<number>();
   const [isShowingDetail, setIsShowingDetail] = useState(false);
   const [error, setError] = useState<Error>();
   const { push } = useNavigation();
@@ -41,8 +39,8 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
     // Query for a list of files and then reverse-sort by creation date/time
     putioAPI.Files.Query(parent_file_id)
       .then((t) => {
-        if (t.data.files.length == 0) {
-          // If the files array is empty, it means this is just a file, not a directory.
+        if (t.data.files.length == 0 && t.data.parent !== null) {
+          // If the files array is empty and the parent is not null, it means this is just a file, not a directory.
           // Set the file to the 'parent' object, which contains the file info.
           setFile(t.data.parent);
           // Get the URL of the file
@@ -52,9 +50,14 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
               setFileUrl(t.data.url);
             })
             .catch((e) => {
+              setFile(undefined);
               console.log("An error occurred while fetching file URL: ", e);
               setError(new Error("Error fetching file URL details. Check your Client ID and OAuth Token settings."));
             });
+        } else if (t.data.files.length == 0 && t.data.parent === null) {
+          // If the files array is empty and parent is null, it means we have no files.
+          setFiles(t.data.files);
+          setFile(undefined);
         } else {
           // The files array isn't empty, which means this is a folder.
           // Set the files object to the 'files' array, which contains the list of files in the folder.
@@ -62,6 +65,8 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
         }
       })
       .catch((e) => {
+        setFiles(undefined);
+        setFile(undefined);
         console.log("An error occurred while fetching files: ", e);
         setError(new Error("Error fetching file details. Check your Client ID and OAuth Token settings."));
       });
@@ -87,51 +92,17 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
     }
   }, [selectedFileId]);
 
-  //
-  // Handle initiating file actions
-  useEffect(() => {
-    if (fileUrl !== undefined && fileAction !== undefined) {
-      let cmd = "";
-      switch (fileAction) {
-        case 1:
-          cmd = formatString(preferences.actionCommand1 ? preferences.actionCommand1 : "(no command defined)", fileUrl);
-          break;
-        case 2:
-          cmd = formatString(preferences.actionCommand2 ? preferences.actionCommand2 : "(no command defined)", fileUrl);
-          break;
-      }
-      exec(cmd, (error: Error | null, stdout: string, stderr: string) => {
-        if (error) {
-          console.log(`error: ${error.message}`);
-          showToast({
-            style: Toast.Style.Failure,
-            title: "Error",
-            message: "Starting download failed.",
-          });
-          return;
-        }
-        if (stderr) {
-          console.log(`stderr: ${stderr}`);
-          return;
-        }
-        console.log(`stdout: ${stdout}`);
-        showToast({
-          style: Toast.Style.Success,
-          title: "Success",
-          message: "⬇️ Download started.",
-        });
-
-        // Null out the download type so we can start another download again in the future.
-        setFileAction(undefined);
-      });
-    }
-  }, [fileAction]);
-
   // If neither files or file are populated yet, display an empty list with the loading animation.
   if (files === undefined && file === undefined) {
     return (
       <List isLoading={true} navigationTitle="Put.io Files">
         <List.EmptyView icon={{ source: "putio-icon.png" }} title="Fetching the list of files..." />
+      </List>
+    );
+  } else if (files !== undefined && files?.length == 0) {
+    return (
+      <List>
+        <List.EmptyView icon={{ source: "putio-icon.png" }} title="There doesn't seem to be anything here." />
       </List>
     );
   } else if (files !== undefined && files?.length > 0) {
@@ -153,7 +124,7 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
         {files.length == 0 ? (
           <List.EmptyView icon={{ source: "putio-icon.png" }} title="There doesn't seem to be anything here." />
         ) : (
-          files &&
+          files && files.length > 0 &&
           Object.values(files).map((file) => {
             const accessories = [];
             accessories.push({ text: formatSize(file.size, true, 1) });
@@ -227,22 +198,30 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
               {fileUrl && <Action.OpenInBrowser url={fileUrl} />}
               {fileUrl && (
                 <Action
-                  title={preferences.actionTitle1 === null ? preferences.actionTitle1 : "(Action #1 Unconfigured)"}
+                  title={preferences.actionTitle1 === null ? preferences.actionTitle1 : "(Configure Custom Action #1)"}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "1" }}
+                  shortcut={{ modifiers: ["cmd", "shift"], key: "1" }}
                   onAction={() => {
-                    doFileAction("action1", fileUrl);
+                    if (preferences.actionTitle1 == "") {
+                      openExtensionPreferences();
+                    } else {
+                      doFileAction(preferences.actionCommand1, fileUrl);
+                    }
                   }}
                 />
               )}
               {fileUrl && (
                 <Action
-                  title={preferences.actionTitle2 === null ? preferences.actionTitle2 : "(Action #2 Unconfigured)"}
+                  title={preferences.actionTitle2 === null ? preferences.actionTitle2 : "(Configure Custom Action #2)"}
                   icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd"], key: "2" }}
+                  shortcut={{ modifiers: ["cmd", "shift"], key: "2" }}
                   onAction={() => {
-                    doFileAction("action2", fileUrl);
-                  }}
+                    if (preferences.actionTitle2 == "") {
+                      openExtensionPreferences();
+                    } else {
+                      doFileAction(preferences.actionCommand2, fileUrl);
+                    }
+                }}
                 />
               )}
             </ActionPanel>
@@ -257,13 +236,6 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
       );
     }
   }
-}
-
-function formatFileInfo(file: IFile): string {
-  return `
-# ${file.name}
-![](${file.screenshot})
-`;
 }
 
 export default FileBrowser;
