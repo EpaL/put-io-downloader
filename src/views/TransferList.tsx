@@ -146,7 +146,7 @@ function TransferList() {
                   <Action
                     title={"Cancel Transfer"}
                     icon={Icon.Trash}
-                    shortcut={{ modifiers: ["cmd"], key: "delete" }}
+                    shortcut={{ modifiers: ["cmd"], key: "-" }}
                     onAction={() => {
                       setCancelTransferId(transfer.id);
                     }}

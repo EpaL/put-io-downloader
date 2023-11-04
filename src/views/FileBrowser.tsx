@@ -11,13 +11,14 @@ import {
 } from "@raycast/api";
 import { useEffect, useState } from "react";
 import FileDetails from "../components/FileDetails";
-import doFileAction from "../utils/fileAction";
+import doFileAction from "../utils/doFileAction";
 import formatSize from "../utils/formatSize";
 import formatFileInfo from "../utils/formatFileInfo";
 import changeTimezone from "../utils/changeTimezone";
 import timeDifference from "../utils/timeDifference";
 import PutioAPI, { IFile } from "@putdotio/api-client";
 import { preferences } from "../preferences";
+import FileActions from "../components/FileActions";
 
 function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
   // State vars and handlers
@@ -151,44 +152,7 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
                 id={`${file.id}`}
                 icon={`${file.icon}`}
                 title={`${file.name}`}
-                actions={
-                  <ActionPanel title="Actions">
-                    <Action
-                      title={"Browse File(s)"}
-                      icon={Icon.List}
-                      onAction={() => push(<FileBrowser parent_file_id={file.id} />)}
-                    />
-                    {fileUrl && <Action.OpenInBrowser url={fileUrl} />}
-                    {fileUrl && (
-                      <Action
-                        title={preferences.actionTitle1 ? preferences.actionTitle1 : "(Configure Custom Action #1)"}
-                        icon={Icon.Download}
-                        shortcut={{ modifiers: ["cmd", "shift"], key: "1" }}
-                        onAction={() => {
-                          if (preferences.actionTitle1 === null) {
-                            openExtensionPreferences();
-                          } else {
-                            doFileAction(preferences.actionCommand1, fileUrl);
-                          }
-                        }}
-                      />
-                    )}
-                    {fileUrl && (
-                      <Action
-                        title={preferences.actionTitle2 ? preferences.actionTitle2 : "(Configure Custom Action #2)"}
-                        icon={Icon.Download}
-                        shortcut={{ modifiers: ["cmd", "shift"], key: "2" }}
-                        onAction={() => {
-                          if (preferences.actionTitle2 === null) {
-                            openExtensionPreferences();
-                          } else {
-                            doFileAction(preferences.actionCommand2, fileUrl);
-                          }
-                        }}
-                      />
-                    )}
-                  </ActionPanel>
-                }
+                actions={<FileActions file={file} fileUrl={fileUrl} showFileBrowser="true"/>}
                 accessories={accessories}
               />
             );
@@ -204,39 +168,7 @@ function FileBrowser({ parent_file_id }: { parent_file_id: number }) {
         <Detail
           markdown={formatFileInfo(file)}
           metadata={<FileDetails file={file} />}
-          actions={
-            <ActionPanel title="File Actions">
-              {fileUrl && <Action.OpenInBrowser url={fileUrl} />}
-              {fileUrl && (
-                <Action
-                  title={preferences.actionTitle1 ? preferences.actionTitle1 : "(Configure Custom Action #1)"}
-                  icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd", "shift"], key: "1" }}
-                  onAction={() => {
-                    if (preferences.actionTitle1 === null) {
-                      openExtensionPreferences();
-                    } else {
-                      doFileAction(preferences.actionCommand1, fileUrl);
-                    }
-                  }}
-                />
-              )}
-              {fileUrl && (
-                <Action
-                  title={preferences.actionTitle2 ? preferences.actionTitle2 : "(Configure Custom Action #2)"}
-                  icon={Icon.Download}
-                  shortcut={{ modifiers: ["cmd", "shift"], key: "2" }}
-                  onAction={() => {
-                    if (preferences.actionTitle2 === null) {
-                      openExtensionPreferences();
-                    } else {
-                      doFileAction(preferences.actionCommand2, fileUrl);
-                    }
-                  }}
-                />
-              )}
-            </ActionPanel>
-          }
+          actions={<FileActions file={file} fileUrl={fileUrl} showFileBrowser="false"/>}
         ></Detail>
       );
     } else {

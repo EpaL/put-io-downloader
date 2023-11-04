@@ -1,7 +1,6 @@
 import { showToast, Toast } from "@raycast/api";
-import { preferences } from "../preferences";
 import { exec } from "child_process";
-import formatString from "../utils/formatString";
+import formatString from "./formatString";
 
 const doFileAction = (actionCommand: string | undefined, fileUrl: string) => {
   if (fileUrl !== undefined && actionCommand !== undefined) {
@@ -25,7 +24,7 @@ const doFileAction = (actionCommand: string | undefined, fileUrl: string) => {
       showToast({
         style: Toast.Style.Success,
         title: "Success",
-        message: "⬇️ Custom Action success.",
+        message: "⬇️ Action success.",
       });
     });
   }
